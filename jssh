@@ -15,7 +15,7 @@ help="
 # 
 # Options:
 # 
-# -cdw : run cd WorkDir after logging
+# -cdw : run cd WorkDir after logging in
 # -c   : create config file
 ########################################################
 "
