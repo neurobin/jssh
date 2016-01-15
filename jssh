@@ -2,19 +2,107 @@
 ###############################################################
 # A convenience wrapper for ssh
 # First argument must be the domain
-# or -cdr which runs cd DocRoot after logging in
+# or one of jssh's native options.
 ###############################################################
 
 help="
-ssh wrapper jssh
-Usage: jssh [options] domain ssh_commands_or options
-options:
--cdr : run cd DocRoot after logging
+########################################################
+######################### `basename "$0"` #########################
+# Convenience wrapper for ssh
+# ######################################################
+#
+# Usage: jssh [options] domain ssh_commands_or options
+# 
+# Options:
+# 
+# -cdr : run cd DocRoot after logging
+# -c   : create config file
+########################################################
 "
-logdir="$HOME/.neurobin/jssh"
+export logdir="$HOME/.neurobin/jssh"
+
+createConfigFile(){
+    echo "
+    Give an easy and memorable name to your config file, something like example.com.
+    Later you will call jssh with this name to login to remote."
+    while true;do
+        echo "Enter config file name: "
+        read conf
+        if [ x"$conf" != x ];then
+            break
+        fi
+    done
+    configfile="$logdir/${conf}.conf"
+    if [ -f "$configfile" ];then
+        while true;do
+            echo "Overwrite (y/n)?: "
+            read yn
+            if [ x"$yn" = xy ] || [ x"$yn" = xY ] || [ x"$yn" = xn ] || [ x"$yn" = xN ];then
+                break
+            fi
+        done
+    fi
+    
+    echo "
+############################# jssh config file ################################
+# Property names are case insensitive
+# if path doesn't have / at the begining
+# it will be taken relative to /home/user (~)
+# '#' doesn't mean a comment. Everything not in the format: 
+# Property=value are comments.
+# You don't need to delete anything inside this block.
+# You can comment out a line safely with a '#' at start, even though it
+# has no special meaning in this config file.
+###############################################################################" > "$configfile"
+    while true;do
+        echo "Enter domain/IP: "
+        read d1
+        if [ x"$d1" != x ];then
+            echo "Host=$d1" >> "$configfile"
+            break
+        fi
+    done
+    while true;do
+        echo "Enter port number: "
+        read d2
+        if [ x"$d2" != x ];then
+            echo "Port=$d2" >> "$configfile"
+            break
+        fi
+    done
+    while true;do
+        echo "Enter username: "
+        read d3
+        if [ x"$d3" != x ];then
+            echo "User=$d3" >> "$configfile"
+            break
+        fi
+    done
+    echo "
+    If a document root is specified, jssh -cdr example.com
+    will land into that directory after logging in."
+    echo "Enter document root: "
+    read d4
+    if [ x"$d4" != x ];then
+        echo "DocRoot=$d4" >> "$configfile"
+    else
+        echo "Not specifying document root for now."
+    fi
+    echo "
+    config file saved as: $configfile
+    You will call jssh for this configuration like this:
+    jssh $conf other_ssh_options_or_commands
+    'jssh $conf' is the native jssh part. All other arguments
+    will be forwarded to ssh command. Any jssh native option
+    must be passed before $conf.
+    You can edit the config file to make further changes.
+    "
+}
+
+
 mkdir -p  "$logdir"
 if [ "x$1" = "x" ];then
-  echo "Domain name required. Abort!"
+  echo "$help"
   exit 1
 fi
 cdr=false
@@ -24,35 +112,46 @@ if [ "x$1" = "x--cd-doc-root" ] || [ "x$1" = "x-cdr" ];then
   cdr=true
 fi
 
+if [ "x$1" = "x--create-config" ] || [ "x$1" = "x-c" ];then
+  shift
+  createConfigFile
+  exit 0
+fi
+
 dom="$1"
 configfile="$logdir/${dom}.conf"
 #configfile is not empty, the following command is safe.
 if [ ! -f "$configfile" ];then 
-  echo "Configuration file doesn't exist. Abort!"
+  echo "E: Configuration file doesn't exist for $dom: Couldn't find $configfile "
   exit 1
 fi
-host="`grep -sio '\([[:blank:]]*\|^\)Host=.*' "$configfile"`"
-host="`echo "$host" |grep -sio '[^=]*$'`"
-port="`grep -sio '\([[:blank:]]*\|^\)Port=.*' "$configfile"`"
-port="`echo "$port" |grep -sio '[^=]*$'`"
-user="`grep -sio '\([[:blank:]]*\|^\)User=.*' "$configfile"`"
-user="`echo "$user" |grep -sio '[^=]*$'`"
+host=`grep -sio '\([[:blank:]]*\|^\)Host[[:blank:]]*=[[:blank:]]*[^[:blank:]]*' "$configfile"`
+host=`echo "$host" |grep -sio '[^=]*$' |head -1`
+port=`grep -sio '\([[:blank:]]*\|^\)Port=.*' "$configfile"`
+port=`echo "$port" |grep -sio '[^=]*$' |head -1`
+user=`grep -sio '\([[:blank:]]*\|^\)User=.*' "$configfile"`
+user=`echo "$user" |grep -sio '[^=]*$' |head -1`
 droot="`grep -sio '\([[:blank:]]*\|^\)DocRoot=.*' "$configfile"`"
-droot="`echo "$droot" |grep -sio '[^=]*$'`"
+droot="`echo "$droot" |grep -sio '[^=]*$' |head -1`"
 
 if [ "x$host" = "x" ]; then host="$dom"; fi
 if [ "x$port" = "x" ]; then echo "Port required";exit 1; fi
 if [ "x$user" = "x" ]; then echo "username required";exit 1; fi
-if [ "x$droot" = "x" ]; then echo "DocRoot required";exit 1; fi
+if [ "x$droot" = "x" ] && $cdr; then echo "DocRoot required";exit 1; fi
+
+#echo "$host"
+#echo "$port"
+#echo "$user"
+#echo "$droot"
 
 shift
 
 if $cdr;then
   com="cd $droot
-  $*"
+   ${1+"$@"}"
   ssh -p "$port" "$user@$host" "$com"
 else
-  ssh -p "$port" "$user@$host" "$*"
+  ssh -p "$port" "$user@$host" "${1+"$@"}"
 fi
 if [ ! $? -eq 0 ];then
   echo "help"
