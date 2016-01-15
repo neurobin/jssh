@@ -24,7 +24,8 @@ export logdir="$HOME/.neurobin/jssh"
 createConfigFile(){
     echo "
     Give an easy and memorable name to your config file, something like example.com.
-    Later you will call jssh with this name to login to remote."
+    Later you will call jssh with this name to login to remote.
+    "
     while true;do
         echo "Enter config file name: "
         read conf
@@ -80,7 +81,8 @@ createConfigFile(){
     done
     echo "
     If a working directory is specified, jssh -cdw example.com
-    will run cd WorkDir just after logging in."
+    will run cd WorkDir just after logging in.
+    "
     echo "Enter working directory: "
     read d4
     if [ x"$d4" != x ];then

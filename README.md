@@ -62,8 +62,11 @@ $ jssh -c
 
     Give an easy and memorable name to your config file, something like example.com.
     Later you will call jssh with this name to login to remote.
+    
 Enter config file name: 
 example.com
+Overwrite (y/n)?: 
+y
 Enter domain/IP: 
 example.com
 Enter port number: 
@@ -73,6 +76,7 @@ neurobin
 
     If a working directory is specified, jssh -cdw example.com
     will run cd WorkDir just after logging in.
+    
 Enter working directory: 
 $HOME/public_html
 
@@ -83,7 +87,7 @@ $HOME/public_html
     will be forwarded to ssh command. Any jssh native option
     must be passed before example.com.
     You can edit the config file to make further changes.
-    
+
 ```
 
 **ssh options/arguments:**
