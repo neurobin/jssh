@@ -1,0 +1,59 @@
+#!/bin/sh
+###############################################################
+# A convenience wrapper for ssh
+# First argument must be the domain
+# or -cdr which runs cd DocRoot after logging in
+###############################################################
+
+help="
+ssh wrapper jssh
+Usage: jssh [options] domain ssh_commands_or options
+options:
+-cdr : run cd DocRoot after logging
+"
+logdir="$HOME/.neurobin/jssh"
+mkdir -p  "$logdir"
+if [ "x$1" = "x" ];then
+  echo "Domain name required. Abort!"
+  exit 1
+fi
+cdr=false
+# $1 can also be --cd-doc-root or -cdr which will run cd DocRoot before running any other command
+if [ "x$1" = "x--cd-doc-root" ] || [ "x$1" = "x-cdr" ];then
+  shift
+  cdr=true
+fi
+
+dom="$1"
+configfile="$logdir/${dom}.conf"
+#configfile is not empty, the following command is safe.
+if [ ! -f "$configfile" ];then 
+  echo "Configuration file doesn't exist. Abort!"
+  exit 1
+fi
+host="`grep -sio '\([[:blank:]]*\|^\)Host=.*' "$configfile"`"
+host="`echo "$host" |grep -sio '[^=]*$'`"
+port="`grep -sio '\([[:blank:]]*\|^\)Port=.*' "$configfile"`"
+port="`echo "$port" |grep -sio '[^=]*$'`"
+user="`grep -sio '\([[:blank:]]*\|^\)User=.*' "$configfile"`"
+user="`echo "$user" |grep -sio '[^=]*$'`"
+droot="`grep -sio '\([[:blank:]]*\|^\)DocRoot=.*' "$configfile"`"
+droot="`echo "$droot" |grep -sio '[^=]*$'`"
+
+if [ "x$host" = "x" ]; then host="$dom"; fi
+if [ "x$port" = "x" ]; then echo "Port required";exit 1; fi
+if [ "x$user" = "x" ]; then echo "username required";exit 1; fi
+if [ "x$droot" = "x" ]; then echo "DocRoot required";exit 1; fi
+
+shift
+
+if $cdr;then
+  com="cd $droot
+  $*"
+  ssh -p "$port" "$user@$host" "$com"
+else
+  ssh -p "$port" "$user@$host" "$*"
+fi
+if [ ! $? -eq 0 ];then
+  echo "help"
+fi
