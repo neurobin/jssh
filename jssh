@@ -91,7 +91,7 @@ createConfigFile(){
     echo "
     config file saved as: $configfile
     You will call jssh for this configuration like this:
-    jssh $conf other_ssh_options_or_commands
+    jssh $conf other_ssh_options_or_args
     'jssh $conf' is the native jssh part. All other arguments
     will be forwarded to ssh command. Any jssh native option
     must be passed before $conf.

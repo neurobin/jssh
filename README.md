@@ -78,7 +78,7 @@ $HOME/public_html
 
     config file saved as: /home/user/.neurobin/jssh/example.com.conf
     You will call jssh for this configuration like this:
-    jssh example.com other_ssh_options_or_commands
+    jssh example.com other_ssh_options_or_args
     'jssh example.com' is the native jssh part. All other arguments
     will be forwarded to ssh command. Any jssh native option
     must be passed before example.com.
