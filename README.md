@@ -76,7 +76,7 @@ neurobin
 Enter working directory: 
 $HOME/public_html
 
-    config file saved as: /home/jahid/.neurobin/jssh/example.com.conf
+    config file saved as: /home/user/.neurobin/jssh/example.com.conf
     You will call jssh for this configuration like this:
     jssh example.com other_ssh_options_or_commands
     'jssh example.com' is the native jssh part. All other arguments
