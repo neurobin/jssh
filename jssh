@@ -15,7 +15,7 @@ help="
 # 
 # Options:
 # 
-# -cdr : run cd DocRoot after logging
+# -cdw : run cd WorkDir after logging
 # -c   : create config file
 ########################################################
 "
@@ -46,7 +46,7 @@ createConfigFile(){
     echo "
 ############################# jssh config file ################################
 # Property names are case insensitive
-# if path doesn't have / at the begining
+# if path doesn't have / at the beginning
 # it will be taken relative to /home/user (~)
 # '#' doesn't mean a comment. Everything not in the format: 
 # Property=value are comments.
@@ -79,14 +79,14 @@ createConfigFile(){
         fi
     done
     echo "
-    If a document root is specified, jssh -cdr example.com
-    will land into that directory after logging in."
-    echo "Enter document root: "
+    If a working directory is specified, jssh -cdw example.com
+    will run cd WorkDir just after logging in."
+    echo "Enter working directory: "
     read d4
     if [ x"$d4" != x ];then
-        echo "DocRoot=$d4" >> "$configfile"
+        echo "WorkDir=$d4" >> "$configfile"
     else
-        echo "Not specifying document root for now."
+        echo "Not specifying working directory for now."
     fi
     echo "
     config file saved as: $configfile
@@ -105,11 +105,11 @@ if [ "x$1" = "x" ];then
   echo "$help"
   exit 1
 fi
-cdr=false
-# $1 can also be --cd-doc-root or -cdr which will run cd DocRoot before running any other command
-if [ "x$1" = "x--cd-doc-root" ] || [ "x$1" = "x-cdr" ];then
+cdw=false
+# $1 can also be --cd-doc-root or -cdw which will run cd WorkDir before running any other command
+if [ "x$1" = "x--cd-doc-root" ] || [ "x$1" = "x-cdw" ];then
   shift
-  cdr=true
+  cdw=true
 fi
 
 if [ "x$1" = "x--create-config" ] || [ "x$1" = "x-c" ];then
@@ -131,13 +131,13 @@ port=`grep -sio '\([[:blank:]]*\|^\)Port=.*' "$configfile"`
 port=`echo "$port" |grep -sio '[^=]*$' |head -1`
 user=`grep -sio '\([[:blank:]]*\|^\)User=.*' "$configfile"`
 user=`echo "$user" |grep -sio '[^=]*$' |head -1`
-droot="`grep -sio '\([[:blank:]]*\|^\)DocRoot=.*' "$configfile"`"
+droot="`grep -sio '\([[:blank:]]*\|^\)WorkDir=.*' "$configfile"`"
 droot="`echo "$droot" |grep -sio '[^=]*$' |head -1`"
 
 if [ "x$host" = "x" ]; then host="$dom"; fi
 if [ "x$port" = "x" ]; then echo "Port required";exit 1; fi
 if [ "x$user" = "x" ]; then echo "username required";exit 1; fi
-if [ "x$droot" = "x" ] && $cdr; then echo "DocRoot required";exit 1; fi
+if [ "x$droot" = "x" ] && $cdw; then echo "WorkDir required";exit 1; fi
 
 #echo "$host"
 #echo "$port"
@@ -146,7 +146,7 @@ if [ "x$droot" = "x" ] && $cdr; then echo "DocRoot required";exit 1; fi
 
 shift
 
-if $cdr;then
+if $cdw;then
   com="cd $droot
    ${1+"$@"}"
   ssh -p "$port" "$user@$host" "$com"
