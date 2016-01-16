@@ -26,7 +26,10 @@ jssh -cdw example.com 'ls -a'
 **Native options:**
 
 * **-c    :** Creates a configuration file.
+* **-cl   :** Creates a link to an existing config file.
 * **-cdw  :** Adds a command `cd WorkDir` at the beginning of other commands, where *WorkDir* is defined as in the configuration file. If *WorkDir* is not defined, jssh outputs error message and exits.
+* **-v    :** Shows version information.
+* **-h    :** Shows jssh help.
 
 **Configuration file:**
 
@@ -38,6 +41,7 @@ ssh -p port username@domain other_ssh_options_or_commands_here
 A typical configuration file would look like this:
 
 ```bash
+
 ############################# jssh config file ################################
 # Property names are case insensitive
 # if path doesn't have / at the beginning
@@ -48,9 +52,10 @@ A typical configuration file would look like this:
 # You can comment out a line safely with a '#' at start, even though it
 # has no special meaning in this config file.
 ###############################################################################
+
 Host=example.com
 Port=22
-User=my_username
+User=neurobin
 WorkDir=$HOME/public_html
 ```
 
@@ -63,7 +68,7 @@ $ jssh -c
     Give an easy and memorable name to your config file, something like example.com.
     Later you will call jssh with this name to login to remote.
     
-Enter config file name: 
+Enter config file name (without .conf): 
 example.com
 Overwrite (y/n)?: 
 y
@@ -80,7 +85,7 @@ neurobin
 Enter working directory: 
 $HOME/public_html
 
-    config file saved as: /home/user/.neurobin/jssh/example.com.conf
+    Saved as: /home/jahid/.neurobin/jssh/example.com.conf
     You will call jssh for this configuration like this:
     jssh example.com other_ssh_options_or_args
     'jssh example.com' is the native jssh part. All other arguments
