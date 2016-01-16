@@ -102,4 +102,5 @@ All arguments of `jssh` after the configuration file are forwarded to `ssh`.
 #Notes:
 
 1. Always use the domain name as the configuration file name. It keeps things simpler.
-2. It is a must to have the configuration file name (without `.conf`) same as the domain name if you use [lcget](https://github.com/neurobin/lcget) to automate the acme challenge completion for Let's Encrypt free SSL certificate.
+2. If the domain name is complex or you want an easier name to invoke the configuration, create a link (with `jssh -cl`) to the domain-named config file and use that easier name to invoke jssh with (`jssh easier-name ...`).
+3. It is a must to have the configuration file name (without `.conf`) same as the domain name if you use [lcget](https://github.com/neurobin/lcget) to automate the acme challenge completion for Let's Encrypt free SSL certificate.
