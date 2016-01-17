@@ -32,6 +32,7 @@ help="
 # -cdw : run cd WorkDir after logging in
 # -c   : create config file
 # -cl  : create config file link to existing config
+# -aw  : add www version too with the same configuration
 ########################################################
 "
 configh="
@@ -89,9 +90,10 @@ createConfigFileLink(){
                 while true;do
                     echo "Overwrite (y/n)?: "
                     read yn
-                    if [ x"$yn" = xy ] || [ x"$yn" = xY ] || [ x"$yn" = xn ] || [ x"$yn" = xN ];then
-                        break
-                    fi
+                    case "$yn" in
+                        [yY] ) break;;
+                        [nN] ) exit 0;;
+                    esac
                 done
             fi
             ln -sf "$configfile" "$configfile_l" &&
@@ -118,9 +120,10 @@ createConfigFile(){
         while true;do
             echo "Overwrite (y/n)?: "
             read yn
-            if [ x"$yn" = xy ] || [ x"$yn" = xY ] || [ x"$yn" = xn ] || [ x"$yn" = xN ];then
-                break
-            fi
+                case "$yn" in
+                    [yY] ) break;;
+                    [nN] ) exit 0;;
+                esac
         done
     fi
     #put config heding to config file
@@ -161,6 +164,12 @@ createConfigFile(){
         echo "Not specifying working directory for now."
     fi
     printEndHelp "$conf" "$configfile"
+    if $addw;then
+        cp "$configfile" "$logdir/www.${conf}.conf" &&
+        echo "
+    Additional: $logdir/www.${conf}.conf
+    "
+    fi
 }
 
 
@@ -170,45 +179,51 @@ if [ "x$1" = "x" ];then
   exit 1
 fi
 cdw=false
+export addw=false
+for opt in "$@";do
+    case "$opt" in
+        -h | --help )
+            echo "$help"
+            shift
+            exit 0
+            ;;
+        -v | --version )
+            echo "$verinfo"
+            shift
+            exit 0
+            ;;
+        --cd-work-dir | -cdw )
+            cdw=true
+            shift
+            ;;
+        --add-www | -aw )
+            export addw=true
+            shift
+            ;;
+        --create-config | -c )
+            createConfigFile
+            shift
+            exit 0
+            ;;
+        --create-config-link | -cl )
+            createConfigFileLink
+            shift
+            exit 0
+            ;;
+        -* )
+            echo "E: Invalid native jssh option: $1. Abort."
+            shift
+            exit 1
+            ;;
+        * )
+            dom="$1"
+            shift
+            break
+            ;;
+    esac
+done
 
-case "$1" in
-    -h | --help )
-        echo "$help"
-        shift
-        exit 0
-        ;;
-    -v | --version )
-        echo "$verinfo"
-        shift
-        exit 0
-        ;;
-    --cd-work-dir | -cdw )
-        cdw=true
-        shift
-        ;;
-    --create-config | -c )
-        createConfigFile
-        shift
-        exit 0
-        ;;
-    --create-config-link | -cl )
-        createConfigFileLink
-        shift
-        exit 0
-        ;;
-    -* )
-        echo "E: Invalid native jssh option: $1. Abort."
-        shift
-        exit 1
-        ;;
-    * )
-        dom="$1"
-        shift
-        ;;
-esac
-
-#dom may not be found at the beginning. We will try once more if not found
-
+#dom may not be found try once more
 if [ x"$dom" = x ];then
     if [ x"$1" != x ];then
         dom="$1"
@@ -253,6 +268,6 @@ if $cdw;then
 else
     ssh -p "$port" "$user@$host" ${1+"$@"}
 fi
-if [ ! $? -eq 0 ];then
-    echo "$help"
-fi
+#if [ ! $? -eq 0 ];then
+#    echo "$help"
+#fi
