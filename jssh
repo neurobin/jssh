@@ -6,7 +6,7 @@
 ###############################################################
 
 name="jssh"
-version="0.0.2"
+version="0.0.3"
 author="Md. Jahidul Hamid"
 source="https://github.com/neurobin/jssh"
 bugt="$source/issues"
@@ -180,6 +180,8 @@ if [ "x$1" = "x" ];then
 fi
 cdw=false
 export addw=false
+create_config=false
+create_config_link=false
 for opt in "$@";do
     case "$opt" in
         -h | --help )
@@ -201,14 +203,12 @@ for opt in "$@";do
             shift
             ;;
         --create-config | -c )
-            createConfigFile
+            create_config=true
             shift
-            exit 0
             ;;
         --create-config-link | -cl )
-            createConfigFileLink
+            create_config_link=true
             shift
-            exit 0
             ;;
         -* )
             echo "E: Invalid native jssh option: $1. Abort."
@@ -222,6 +222,16 @@ for opt in "$@";do
             ;;
     esac
 done
+
+if $create_config; then
+    createConfigFile
+    exit 0
+fi
+
+if $create_config_link; then
+    createConfigFileLink
+    exit 0
+fi
 
 #dom may not be found try once more
 if [ x"$dom" = x ];then
@@ -241,14 +251,10 @@ if [ ! -f "$configfile" ];then
   exit 1
 fi
 
-host=`grep -sio '\([[:blank:]]*\|^\)Host[[:blank:]]*=[[:blank:]]*[^[:blank:]]*' "$configfile"`
-host=`echo "$host" |grep -sio '[^=]*$' |head -1`
-port=`grep -sio '\([[:blank:]]*\|^\)Port=.*' "$configfile"`
-port=`echo "$port" |grep -sio '[^=]*$' |head -1`
-user=`grep -sio '\([[:blank:]]*\|^\)User=.*' "$configfile"`
-user=`echo "$user" |grep -sio '[^=]*$' |head -1`
-droot="`grep -sio '\([[:blank:]]*\|^\)WorkDir=.*' "$configfile"`"
-droot="`echo "$droot" |grep -sio '[^=]*$' |head -1`"
+host="$(sed -n -e 's/^[[:blank:]]*Host[[:blank:]]*=[[:blank:]]*\(.*\)$/\1/pi' "$configfile" |sed -e 's/[[:blank:]]*$//' |head -1)"
+port="$(sed -n -e 's/^[[:blank:]]*Port[[:blank:]]*=[[:blank:]]*\(.*\)$/\1/pi' "$configfile" |sed -e 's/[[:blank:]]*$//' |head -1)"
+user="$(sed -n -e 's/^[[:blank:]]*User[[:blank:]]*=[[:blank:]]*\(.*\)$/\1/pi' "$configfile" |sed -e 's/[[:blank:]]*$//' |head -1)"
+droot="$(sed -n -e 's/^[[:blank:]]*WorkDir[[:blank:]]*=[[:blank:]]*\(.*\)$/\1/pi' "$configfile" |sed -e 's/[[:blank:]]*$//' |head -1)"
 
 if [ "x$host" = "x" ]; then host="$dom"; fi
 if [ "x$port" = "x" ]; then echo "E: Port required. Abort.";exit 1; fi

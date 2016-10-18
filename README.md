@@ -25,7 +25,7 @@ jssh -cdw example.com 'ls -a'
 
 **Native options:**
 
-* **-aw   :** Add another config file appended 'www.' at the beginning of the filename during creation. Must be passed **before** `-c` to have its' effect.
+* **-aw   :** Add another config file appended 'www.' at the beginning of the filename during creation.
 * **-c    :** Creates a configuration file.
 * **-cl   :** Creates a link to an existing config file.
 * **-cdw  :** Adds a command `cd WorkDir` at the beginning of other commands, where *WorkDir* is defined as in the configuration file. If *WorkDir* is not defined, jssh outputs error message and exits.
